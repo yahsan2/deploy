@@ -18,18 +18,18 @@ try {
   $payload = json_decode($json);
 
 
-  if(strpos($payload->ref, "tags") !== false){
-    if(strpos($payload->head_commit->message, "release") !== false || strpos($payload->head_commit->message, "hotfix") !== false ){
-      write_log($payload);
-      run_pull_script($payload,"master");
-    }
-  }elseif(is_dev_server() && strpos($payload->ref, "tags") === false){
+  if(is_dev_server()){
     if(strpos($payload->head_commit->message, "release") !== false && strpos($payload->ref, "master") !== false){
       write_log($payload);
       run_pull_script($payload,"master");
     }elseif(strpos($payload->ref, "develop") !== false){
       write_log($payload);
       run_pull_script($payload,"develop");
+    }
+  }elseif(strpos($payload->ref, "tags") !== false){
+    if(strpos($payload->head_commit->message, "release") !== false || strpos($payload->head_commit->message, "hotfix") !== false ){
+      write_log($payload);
+      run_pull_script($payload,"master");
     }
   }
 
