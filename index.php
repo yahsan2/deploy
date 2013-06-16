@@ -7,7 +7,7 @@ try {
       || empty($_REQUEST["payload"])
   ){
     file_put_contents("logs/receive.txt", "-- OTHER IP ACCESS: ". $_SERVER[ "REMOTE_ADDR" ]." -------------------------------\n\n", FILE_APPEND);
-    sent_mail('Deploy Error: Cannnot Accept IP','Cannnot Accept IP:' .$_SERVER[ "REMOTE_ADDR" ]);
+    sent_mail('Error: Cannnot Accept IP','Cannnot Accept IP:' .$_SERVER[ "REMOTE_ADDR" ]);
     // return 500 code for request ecxept github
     $errorStatus = "HTTP/1.1 500 Internal Server Error";
     header( $errorStatus );
@@ -36,7 +36,7 @@ try {
   file_put_contents("logs/receive.txt", "\n-- finish -- ".date("Y/m/d/ H:i:s")." ------------------------\n\n", FILE_APPEND);
 
 } catch (Exception $e) {
-  sent_mail("Deploy ERROR: Exception", $e->getMessage(), "\n");
+  sent_mail("ERROR: Exception", $e->getMessage(), "\n");
 }
 
 
@@ -120,7 +120,7 @@ function sent_success_mail($payload,$res){
       "PullResponce:\n".$res,
       print_r($payload,FILE_APPEND)
     );
-  sent_mail("Deploy SUCCESS:".$payload->repository->name , join("\n\n",$message));
+  sent_mail("SUCCESS: ".$payload->repository->name , join("\n\n",$message));
 }
 
 
