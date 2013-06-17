@@ -1,5 +1,7 @@
 <?php
 try {
+  if(!file_exists('logs'))
+    exec("mkdir logs");
 
   file_put_contents("logs/receive.txt", "-- start  -- ".date("Y/m/d/ H:i:s")." ------------------------\n\n", FILE_APPEND);
 
@@ -7,7 +9,7 @@ try {
       || empty($_REQUEST["payload"])
   ){
     file_put_contents("logs/receive.txt", "-- OTHER IP ACCESS: ". $_SERVER[ "REMOTE_ADDR" ]." -------------------------------\n\n", FILE_APPEND);
-    sent_mail('Error: Cannnot Accept IP','Cannnot Accept IP:' .$_SERVER[ "REMOTE_ADDR" ]);
+    sent_mail('ERROR: Cannnot Accept IP','Cannnot Accept IP:' .$_SERVER[ "REMOTE_ADDR" ]);
     // return 500 code for request ecxept github
     $errorStatus = "HTTP/1.1 500 Internal Server Error";
     header( $errorStatus );
@@ -36,7 +38,7 @@ try {
   file_put_contents("logs/receive.txt", "\n-- finish -- ".date("Y/m/d/ H:i:s")." ------------------------\n\n", FILE_APPEND);
 
 } catch (Exception $e) {
-  sent_mail("ERROR: Exception", $e->getMessage(), "\n");
+  sent_mail("ERROR: Exception", $e->getMessage());
 }
 
 
@@ -102,10 +104,17 @@ function write_log($payload){
 function run_pull_script($payload,$branch){
   file_put_contents("logs/receive.txt", "start: pull_script\n", FILE_APPEND);
   exec("chmod +x deploy.sh");
-  $res = exec("./deploy.sh ".$branch);
+  exec("./deploy.sh ".$branch, $output, $return_var);
+  file_put_contents("logs/receive.txt", "branch: ".$branch."\n", FILE_APPEND);
+  file_put_contents("logs/receive.txt", "output: ".print_r($output,true)."\n", FILE_APPEND);
+  file_put_contents("logs/receive.txt", "return_var: ".$return_var."\n", FILE_APPEND);
   file_put_contents("logs/receive.txt", "finish: pull_script\n", FILE_APPEND);
 
-  sent_success_mail($payload, $res);
+  if($return_var == 0){
+    sent_success_mail($payload, print_r($output,true));
+  }else{
+    sent_mail("ERROR: Pull Fails", print_r($output,true)."\n\n".print_r($payload,true));
+  }
 }
 
 function sent_success_mail($payload,$res){
@@ -118,7 +127,7 @@ function sent_success_mail($payload,$res){
       "Refs:\n".$payload->ref,
       "Github:\n".$payload->repository->url,
       "PullResponce:\n".$res,
-      print_r($payload,FILE_APPEND)
+      print_r($payload,true)
     );
   sent_mail("SUCCESS: ".$payload->repository->name , join("\n\n",$message));
 }
